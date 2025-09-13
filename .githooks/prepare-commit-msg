@@ -1,0 +1,124 @@
+#!/bin/bash
+
+# Gitmoji-style commit message preparation
+# This hook adds appropriate emojis to commit messages based on conventional commit types
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# Only process interactive commits
+if [ "$COMMIT_SOURCE" = "merge" ] || [ "$COMMIT_SOURCE" = "squash" ] || [ "$COMMIT_SOURCE" = "commit" ]; then
+    exit 0
+fi
+
+# Read the current commit message and clean it
+COMMIT_MSG=$(head -n 1 "$COMMIT_MSG_FILE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+# Skip if message is empty or already has an emoji
+if [[ -z "$COMMIT_MSG" ]] || [[ $COMMIT_MSG =~ ^[[:space:]]*[\U1F300-\U1F9FF] ]]; then
+    exit 0
+fi
+
+# Add emoji based on commit type
+case "$COMMIT_MSG" in
+    feat:*|feature:*)
+        NEW_MSG="✨ $COMMIT_MSG"
+        ;;
+    fix:*|bugfix:*)
+        NEW_MSG="🐛 $COMMIT_MSG"
+        ;;
+    docs:*|doc:*)
+        NEW_MSG="📚 $COMMIT_MSG"
+        ;;
+    style:*|format:*)
+        NEW_MSG="💄 $COMMIT_MSG"
+        ;;
+    refactor:*)
+        NEW_MSG="♻️ $COMMIT_MSG"
+        ;;
+    perf:*|performance:*)
+        NEW_MSG="⚡ $COMMIT_MSG"
+        ;;
+    test:*|tests:*)
+        NEW_MSG="🧪 $COMMIT_MSG"
+        ;;
+    build:*|ci:*)
+        NEW_MSG="👷 $COMMIT_MSG"
+        ;;
+    chore:*)
+        NEW_MSG="🔧 $COMMIT_MSG"
+        ;;
+    revert:*)
+        NEW_MSG="⏪ $COMMIT_MSG"
+        ;;
+    merge:*)
+        NEW_MSG="🔀 $COMMIT_MSG"
+        ;;
+    hotfix:*)
+        NEW_MSG="🚑 $COMMIT_MSG"
+        ;;
+    config:*|configure:*)
+        NEW_MSG="🔧 $COMMIT_MSG"
+        ;;
+    deps:*|dependencies:*)
+        NEW_MSG="⬆️ $COMMIT_MSG"
+        ;;
+    security:*)
+        NEW_MSG="🔒 $COMMIT_MSG"
+        ;;
+    ui:*|ux:*)
+        NEW_MSG="🎨 $COMMIT_MSG"
+        ;;
+    init:*|initial:*)
+        NEW_MSG="🎉 $COMMIT_MSG"
+        ;;
+    deploy:*|release:*)
+        NEW_MSG="🚀 $COMMIT_MSG"
+        ;;
+    wip:*)
+        NEW_MSG="🚧 $COMMIT_MSG"
+        ;;
+    cleanup:*)
+        NEW_MSG="🧹 $COMMIT_MSG"
+        ;;
+    add:*)
+        NEW_MSG="➕ $COMMIT_MSG"
+        ;;
+    remove:*|delete:*)
+        NEW_MSG="➖ $COMMIT_MSG"
+        ;;
+    update:*)
+        NEW_MSG="⬆️ $COMMIT_MSG"
+        ;;
+    *)
+        # Check for common action words at the beginning
+        if [[ $COMMIT_MSG =~ ^[Aa]dd[[:space:]] ]]; then
+            NEW_MSG="➕ $COMMIT_MSG"
+        elif [[ $COMMIT_MSG =~ ^[Rr]emove[[:space:]] ]] || [[ $COMMIT_MSG =~ ^[Dd]elete[[:space:]] ]]; then
+            NEW_MSG="➖ $COMMIT_MSG"
+        elif [[ $COMMIT_MSG =~ ^[Uu]pdate[[:space:]] ]]; then
+            NEW_MSG="⬆️ $COMMIT_MSG"
+        elif [[ $COMMIT_MSG =~ ^[Ff]ix[[:space:]] ]]; then
+            NEW_MSG="🐛 $COMMIT_MSG"
+        elif [[ $COMMIT_MSG =~ ^[Rr]efactor[[:space:]] ]]; then
+            NEW_MSG="♻️ $COMMIT_MSG"
+        else
+            NEW_MSG="$COMMIT_MSG"
+        fi
+        ;;
+esac
+
+# Only update if we added an emoji
+if [ "$NEW_MSG" != "$COMMIT_MSG" ]; then
+    # Preserve any additional lines from the original commit message
+    TAIL_MSG=$(tail -n +2 "$COMMIT_MSG_FILE")
+
+    # Write the new message
+    echo "$NEW_MSG" > "$COMMIT_MSG_FILE"
+
+    # Append any remaining lines if they exist
+    if [ -n "$TAIL_MSG" ]; then
+        echo "" >> "$COMMIT_MSG_FILE"
+        echo "$TAIL_MSG" >> "$COMMIT_MSG_FILE"
+    fi
+fi
