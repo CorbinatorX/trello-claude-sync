@@ -4,6 +4,9 @@
   "description": "Development workflow automation tool for syncing TodoWrite tasks with Trello boards",
   "main": "dist/index.js",
   "type": "module",
+  "bin": {
+    "trello-claude-sync": "dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
@@ -12,17 +15,34 @@
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.ts",
     "type-check": "tsc --noEmit",
-    "slash": "npm run build && node dist/slash-commands.js"
+    "slash": "npm run build && node dist/slash-commands.js",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "trello",
     "mcp",
     "workflow",
     "development",
-    "claude-code"
+    "claude-code",
+    "cli",
+    "todo",
+    "automation"
   ],
   "author": "CorbinatorX",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/corbintaylor/trello-claude-sync.git"
+  },
+  "homepage": "https://github.com/corbintaylor/trello-claude-sync",
+  "bugs": {
+    "url": "https://github.com/corbintaylor/trello-claude-sync/issues"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    ".env.example"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
     "dotenv": "^16.4.5",

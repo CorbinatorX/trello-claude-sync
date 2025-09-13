@@ -1,0 +1,57 @@
+# Source files (we only want to publish dist/)
+src/
+*.ts
+!*.d.ts
+
+# Development files
+.env*
+!.env.example
+.eslintrc.json
+jest.config.js
+tsconfig.json
+.trello-session.json
+
+# Development scripts
+commands/
+setup.sh
+
+# Tests
+**/*.test.*
+**/*.spec.*
+__tests__/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Node modules
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.tsbuildinfo
+
+# Git files
+.git/
+.gitignore
+.githooks/
+
+# Claude configuration
+.claude/

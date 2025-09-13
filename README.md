@@ -36,6 +36,8 @@ This integration creates a seamless workflow between Claude Code's ephemeral tas
 - 🔍 **Card Linking**: Search and link existing Trello cards to new tasks
 - ⚡ **Session Persistence**: State survives across command executions
 - 🚀 **Automatic Movement**: Cards flow through lists based on workflow state
+- 🌍 **Global CLI**: Install once, use anywhere with `trello-claude-sync` command
+- 🚀 **No Build Required**: Pre-built package eliminates need for `npm run build` step
 
 ## Prerequisites
 
@@ -45,7 +47,25 @@ This integration creates a seamless workflow between Claude Code's ephemeral tas
 
 ## Installation
 
-### 1. Install Dependencies
+### Option 1: Global CLI Installation (Recommended)
+
+Install the package globally for system-wide access:
+
+```bash
+npm install -g trello-claude-sync
+```
+
+After installation, the CLI is available anywhere as `trello-claude-sync`:
+
+```bash
+trello-claude-sync --help
+trello-claude-sync status
+trello-claude-sync create "My new task"
+```
+
+### Option 2: Local Development
+
+For local development or contributing to this package:
 
 ```bash
 npm install
@@ -114,7 +134,35 @@ Here's how to use the integration in your development workflow:
 
 ## Usage
 
-### Testing the Integration
+### CLI Commands (Global Installation)
+
+After installing globally, use `trello-claude-sync` from anywhere:
+
+```bash
+# Show help and all available commands
+trello-claude-sync help
+
+# Create a Trello card from your current plan
+trello-claude-sync create "Implement user authentication feature"
+
+# Pick up an existing card to work on (moves to In Progress)
+trello-claude-sync pickup 68c5ade263559cdf6d7cfbe1
+# Or search by name
+trello-claude-sync pickup "user auth"
+
+# Show current session status
+trello-claude-sync status
+
+# Update current card with progress notes
+trello-claude-sync update "Completed login endpoint, working on JWT validation"
+
+# Mark current card as complete (moves to Done)
+trello-claude-sync complete "All tests passing and documented"
+```
+
+### Local Development Usage
+
+For local development and testing:
 
 ```bash
 # Test connection to Trello board
@@ -125,6 +173,10 @@ npm start info
 
 # Test sync with sample tasks
 npm start sync
+
+# Run slash commands locally
+npm run slash create "Test task"
+npm run slash status
 ```
 
 ### Programmatic Usage
