@@ -33,15 +33,15 @@ This integration creates a seamless workflow between Claude Code's ephemeral tas
 #### 🎯 **NEW in v2.0: Automatic Sync Hooks**
 - 🪝 **PostToolUse Integration**: Automatically triggers after every TodoWrite update
 - ⚡ **Real-time Sync**: No manual commands needed - updates happen instantly
-- 🔄 **Smart Checklist Matching**: Automatically updates existing Trello checklist items
-- 📊 **Progress Tracking**: Real-time progress calculation (e.g., 3/15 tasks completed)
-- 🎯 **Milestone Comments**: Auto-comments added for significant progress milestones
+- 📝 **Task Description Sync**: TodoWrite tasks kept in sync with card description
+- 📊 **Progress Tracking**: Real-time progress calculation via comments
+- 🎯 **Progress Comments**: Auto-comments added for status updates
 
 #### 📋 **Established Features**
 - 🔄 **Bidirectional Sync**: Link TodoWrite tasks with Trello cards
 - 🎯 **Smart Mapping**: Auto-discovery of board lists (To Do, In Progress, Done, etc.)
 - 🏷️ **Automatic Labeling**: Content-based label assignment (bug, feature, API, etc.)
-- ☑️ **Checklist Management**: TodoWrite tasks become Trello checklist items
+- 📝 **Task Description Tracking**: TodoWrite tasks tracked in card description with status icons
 - 💬 **Progress Comments**: Add progress notes to cards during development
 - 🔍 **Card Linking**: Search and link existing Trello cards to new tasks
 - ⚡ **Session Persistence**: State survives across command executions
@@ -124,8 +124,8 @@ cp .claude/claude_hooks.json ../.claude/
 **What this does:**
 - Installs a PostToolUse hook that triggers after every TodoWrite update
 - Automatically syncs TodoWrite changes to your active Trello card
-- Updates checklist progress in real-time
-- Adds milestone comments for significant progress
+- Updates task status in card description with status icons
+- Adds progress comments for status updates
 
 **Restart Claude Code** after installing hooks to activate automatic sync!
 
@@ -140,7 +140,7 @@ Here's how to use the integration in your development workflow:
 
 # 2. Create persistent Trello card from your plan
 /trello-create "User Authentication Feature"
-# → Creates card with checklist containing all TodoWrite tasks
+# → Creates card with description containing all TodoWrite tasks
 # → Automatically labels as "Feature", "API", "Backend"
 # → Card placed in TODO list
 
@@ -151,7 +151,7 @@ Here's how to use the integration in your development workflow:
 
 # 4. Sync progress as you work
 /trello-update "Completed auth endpoints, working on tests"
-# → Checklist items marked complete based on TodoWrite status
+# → Task status updated in description with status icons
 # → Progress comment added to card
 
 # 5. Complete the feature
@@ -538,7 +538,7 @@ MIT - See LICENSE file for details.
 
 Planned improvements include:
 
-- **Advanced Checklist Sync**: Bidirectional sync with more granular status mapping
+- **Enhanced Task Sync**: More granular status mapping and task metadata
 - **Time Tracking**: Automatic logging of time spent on tasks
 - **Multiple Board Support**: Work across different projects simultaneously
 - **Team Templates**: Pre-configured card templates for different work types

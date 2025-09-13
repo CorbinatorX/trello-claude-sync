@@ -180,41 +180,6 @@ export class TrelloMCPClient {
     return this.listIds[listType] || null;
   }
 
-  /**
-   * Create checklist on card
-   */
-  async createChecklist(cardId: string, name: string, items: string[]): Promise<any> {
-    // Create the checklist
-    const checklist = await this.makeRequest('/checklists', 'POST', {
-      idCard: cardId,
-      name: name,
-    });
-
-    // Add items to the checklist
-    for (const item of items) {
-      await this.makeRequest(`/checklists/${checklist.id}/checkItems`, 'POST', {
-        name: item,
-      });
-    }
-
-    return checklist;
-  }
-
-  /**
-   * Update checklist item status
-   */
-  async updateChecklistItem(checklistId: string, itemId: string, completed: boolean): Promise<void> {
-    await this.makeRequest(`/checklists/${checklistId}/checkItems/${itemId}`, 'PUT', {
-      state: completed ? 'complete' : 'incomplete',
-    });
-  }
-
-  /**
-   * Get checklists for a card
-   */
-  async getCardChecklists(cardId: string): Promise<any[]> {
-    return this.makeRequest(`/cards/${cardId}/checklists`);
-  }
 
   /**
    * Get board labels

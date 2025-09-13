@@ -31,14 +31,8 @@ export async function createCardFromPlan(planText?: string): Promise<string> {
     // Create the card in TODO list
     const card = await client.createCard(cardTitle, cardDescription);
 
-    // Parse tasks from plan for checklist
+    // Parse tasks from plan and store in session
     const tasks = extractTasksFromPlan(planText || '');
-
-    // Create checklist if we have tasks
-    if (tasks.length > 0) {
-      const taskNames = tasks.map(task => task.content);
-      await client.createChecklist(card.id, 'Development Tasks', taskNames);
-    }
 
     // Add relevant labels
     await addRelevantLabels(client, card.id, cardTitle, planText || '');
@@ -55,13 +49,13 @@ export async function createCardFromPlan(planText?: string): Promise<string> {
 **List:** TODO 📚
 
 ✨ **Enhanced features:**
-- ☑️ Checklist created with ${tasks.length} development tasks
+- 📋 ${tasks.length} development tasks parsed and tracked in description
 - 🏷️ Relevant labels automatically applied
 - 🔗 Linked to your current session
 
 **Next steps:**
 - \`/trello-pickup ${card.id}\` to work on this card (moves to DOING)
-- \`/trello-update\` to sync TodoWrite progress to checklist
+- Updates sync automatically via TodoWrite hooks
 - \`/trello-complete\` when all work is finished`;
 
   } catch (error) {
@@ -206,7 +200,7 @@ export async function completeCard(completionNote?: string): Promise<string> {
  */
 export async function updateCard(updateNote?: string): Promise<string> {
   try {
-    const { cardId, cardName, tasks } = getActiveCard();
+    const { cardId, tasks } = getActiveCard();
     if (!cardId) {
       return `❌ No active Trello card in session. Use \`/trello-pickup <card>\` first.`;
     }
@@ -222,8 +216,7 @@ export async function updateCard(updateNote?: string): Promise<string> {
     const updatedDescription = generateUpdatedDescription(card.desc || '', tasks || []);
     await client.updateCard(cardId, undefined, updatedDescription);
 
-    // Update checklists with current task status
-    await syncTasksToChecklists(client, cardId, tasks || []);
+    // No checklist sync - progress tracked via comments and description
 
     // Add progress comment
     const progressSummary = generateProgressSummary(tasks || []);
@@ -239,12 +232,11 @@ ${progressSummary}
 
     return `📋 **Card Updated Successfully**
 
-**Card:** [${cardName}](${card.url})
+**Card:** [${card.name}](${card.url})
 **Progress:** ${progressSummary}
 
 🔄 **What was synced:**
-- ☑️ Checklist items updated with TodoWrite task status
-- 📝 Card description refreshed with current progress
+- 📝 Card description refreshed with current task status
 - 💬 Progress comment added with completion summary
 - ⏰ Card timestamp updated for activity tracking
 
@@ -383,45 +375,6 @@ async function addRelevantLabels(client: TrelloMCPClient, cardId: string, title:
   }
 }
 
-async function syncTasksToChecklists(client: TrelloMCPClient, cardId: string, tasks: TodoTask[]): Promise<void> {
-  try {
-    const checklists = await client.getCardChecklists(cardId);
-
-    if (checklists.length === 0) {
-      // No checklists exist, create one if we have tasks
-      if (tasks.length > 0) {
-        const taskNames = tasks.map(task => task.content);
-        await client.createChecklist(cardId, 'Development Tasks', taskNames);
-      }
-      return;
-    }
-
-    // Update existing checklists
-    for (const checklist of checklists) {
-      const checkItems = checklist.checkItems || [];
-
-      for (const task of tasks) {
-        // Find matching checklist item
-        const matchingItem = checkItems.find((item: any) =>
-          item.name.includes(task.content) || task.content.includes(item.name)
-        );
-
-        if (matchingItem) {
-          const shouldBeCompleted = task.status === 'completed';
-          const isCurrentlyCompleted = matchingItem.state === 'complete';
-
-          if (shouldBeCompleted !== isCurrentlyCompleted) {
-            await client.updateChecklistItem(checklist.id, matchingItem.id, shouldBeCompleted);
-          }
-        }
-      }
-    }
-
-    logger.info('Synced task status to checklists');
-  } catch (error) {
-    logger.warn('Failed to sync checklists:', error);
-  }
-}
 
 function extractTitleFromPlan(planText?: string): string {
   if (!planText) return 'Development Task';
