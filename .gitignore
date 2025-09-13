@@ -13,6 +13,7 @@ build/
 .env.local
 .env.production
 .env.staging
+.trello/.env
 
 # Testing
 coverage/

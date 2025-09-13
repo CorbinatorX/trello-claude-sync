@@ -92,10 +92,11 @@ npm install
 ### 3. Configure Environment
 
 ```bash
-cp .env.example .env
+mkdir .trello
+cp .trello/.env.example .trello/.env
 ```
 
-Edit `.env` with your credentials:
+Edit `.trello/.env` with your credentials:
 
 ```env
 TRELLO_API_KEY=your_trello_api_key_here
@@ -410,7 +411,7 @@ LOG_LEVEL=debug           # Logging level (debug, info, warn, error)
 
 3. **"No list configured for status"**
    - Run `npm start test` to auto-discover lists
-   - Manually set list IDs in `.env`
+   - Manually set list IDs in `.trello/.env`
    - Verify list names match expected patterns
 
 4. **Rate limiting errors**

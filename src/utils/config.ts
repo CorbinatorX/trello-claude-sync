@@ -1,8 +1,19 @@
 import { config as dotenvConfig } from 'dotenv';
+import { join } from 'path';
+import { existsSync } from 'fs';
 import { TrelloConfig } from '../types/index.js';
 
-// Load environment variables
-dotenvConfig();
+// Load environment variables from .trello/.env if it exists, otherwise fallback to .env
+const trelloEnvPath = join(process.cwd(), '.trello', '.env');
+const rootEnvPath = join(process.cwd(), '.env');
+
+if (existsSync(trelloEnvPath)) {
+  dotenvConfig({ path: trelloEnvPath });
+} else if (existsSync(rootEnvPath)) {
+  dotenvConfig({ path: rootEnvPath });
+} else {
+  dotenvConfig(); // Default behavior
+}
 
 export class ConfigManager {
   private static instance: ConfigManager;
@@ -25,7 +36,7 @@ export class ConfigManager {
     const missing = required.filter(key => !process.env[key]);
 
     if (missing.length > 0) {
-      throw new Error(`Missing required environment variables: ${missing.join(', ')}\nPlease copy .env.example to .env and fill in your Trello credentials.`);
+      throw new Error(`Missing required environment variables: ${missing.join(', ')}\nPlease create .trello/.env (or .env) and fill in your Trello credentials.`);
     }
   }
 
