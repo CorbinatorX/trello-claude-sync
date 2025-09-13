@@ -29,7 +29,6 @@ describe('TodoTrelloSync', () => {
     // Create mock instance
     mockTrelloClient = {
       connect: jest.fn().mockResolvedValue(undefined),
-      disconnect: jest.fn().mockResolvedValue(undefined),
       autoDiscoverLists: jest.fn().mockResolvedValue(undefined),
       healthCheck: jest.fn().mockResolvedValue(true),
       getBoard: jest.fn().mockResolvedValue({
@@ -255,7 +254,7 @@ describe('TodoTrelloSync', () => {
       await syncService.initialize();
       await syncService.cleanup();
 
-      expect(mockTrelloClient.disconnect).toHaveBeenCalled();
+      // No disconnect method in simplified client
 
       // Verify session data is cleared
       const summary = syncService.getSyncSummary();

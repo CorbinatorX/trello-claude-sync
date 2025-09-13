@@ -1,15 +1,9 @@
 // Test setup and global configurations
 
 import { config } from 'dotenv';
-import { join } from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // Load test environment variables
-config({ path: join(__dirname, '../../.env.test') });
+config({ path: '.env.test' });
 
 // Mock console methods in tests unless specifically testing logging
 global.console = {

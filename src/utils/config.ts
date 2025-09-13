@@ -1,14 +1,8 @@
 import { config as dotenvConfig } from 'dotenv';
-import { join } from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { TrelloConfig } from '../types/index.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 // Load environment variables
-dotenvConfig({ path: join(__dirname, '../../.env') });
+dotenvConfig();
 
 export class ConfigManager {
   private static instance: ConfigManager;
