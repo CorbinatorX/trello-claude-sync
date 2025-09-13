@@ -1,6 +1,8 @@
-# Trello Claude Sync
+# Trello Claude Sync v2.0
 
-Development workflow automation tool for syncing TodoWrite tasks with Trello boards. This tool enables autonomous development workflow management by bridging the gap between Claude Code's TodoWrite functionality and persistent project tracking in Trello.
+🚀 **Automatic TodoWrite-Trello Integration for Claude Code**
+
+Development workflow automation tool with **automatic sync hooks** that provides seamless bidirectional sync between Claude Code's TodoWrite and Trello boards. No more manual sync - every TodoWrite update automatically syncs to Trello in real-time!
 
 ## Overview
 
@@ -28,6 +30,14 @@ This integration creates a seamless workflow between Claude Code's ephemeral tas
 
 ### Core Features
 
+#### 🎯 **NEW in v2.0: Automatic Sync Hooks**
+- 🪝 **PostToolUse Integration**: Automatically triggers after every TodoWrite update
+- ⚡ **Real-time Sync**: No manual commands needed - updates happen instantly
+- 🔄 **Smart Checklist Matching**: Automatically updates existing Trello checklist items
+- 📊 **Progress Tracking**: Real-time progress calculation (e.g., 3/15 tasks completed)
+- 🎯 **Milestone Comments**: Auto-comments added for significant progress milestones
+
+#### 📋 **Established Features**
 - 🔄 **Bidirectional Sync**: Link TodoWrite tasks with Trello cards
 - 🎯 **Smart Mapping**: Auto-discovery of board lists (To Do, In Progress, Done, etc.)
 - 🏷️ **Automatic Labeling**: Content-based label assignment (bug, feature, API, etc.)
@@ -37,7 +47,6 @@ This integration creates a seamless workflow between Claude Code's ephemeral tas
 - ⚡ **Session Persistence**: State survives across command executions
 - 🚀 **Automatic Movement**: Cards flow through lists based on workflow state
 - 🌍 **Global CLI**: Install once, use anywhere with `trello-claude-sync` command
-- 🚀 **No Build Required**: Pre-built package eliminates need for `npm run build` step
 
 ## Prerequisites
 
@@ -45,7 +54,7 @@ This integration creates a seamless workflow between Claude Code's ephemeral tas
 2. **Trello Account** with a board for your project
 3. **Trello API Credentials** (API Key + Token)
 
-## Installation
+## Installation & Automatic Sync Setup
 
 ### Option 1: Global CLI Installation (Recommended)
 
@@ -99,6 +108,26 @@ LOG_LEVEL=debug
 **Finding your Board ID:**
 - Open your Trello board: `https://trello.com/b/BOARD_ID/your-board-name`
 - The `BOARD_ID` is in the URL
+
+### 4. Enable Automatic Sync (NEW in v2.0!)
+
+To enable automatic TodoWrite-to-Trello sync, install the Claude Code hooks:
+
+```bash
+# Copy hooks configuration to your project
+npm run install:hooks
+
+# Or manually copy if the above doesn't work
+cp .claude/claude_hooks.json ../.claude/
+```
+
+**What this does:**
+- Installs a PostToolUse hook that triggers after every TodoWrite update
+- Automatically syncs TodoWrite changes to your active Trello card
+- Updates checklist progress in real-time
+- Adds milestone comments for significant progress
+
+**Restart Claude Code** after installing hooks to activate automatic sync!
 
 
 ## Quick Start - Real-World Example

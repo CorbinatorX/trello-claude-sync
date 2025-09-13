@@ -1,0 +1,13 @@
+{
+  "hooks": [
+    {
+      "event": "PostToolUse",
+      "matcher": {
+        "toolName": "TodoWrite"
+      },
+      "script": "node dev-tools/trello-integration/hooks/todo-sync-hook.js",
+      "enabled": true,
+      "description": "Automatically sync TodoWrite updates to active Trello card"
+    }
+  ]
+}
