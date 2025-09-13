@@ -25,7 +25,6 @@ This integration provides a **low-complexity manual sync** approach that:
 1. **Node.js 18+**
 2. **Trello Account** with a board for your project
 3. **Trello API Credentials** (API Key + Token)
-4. **kocakli/Trello-Desktop-MCP** server installed and configured
 
 ## Installation
 
@@ -64,46 +63,6 @@ LOG_LEVEL=debug
 - Open your Trello board: `https://trello.com/b/BOARD_ID/your-board-name`
 - The `BOARD_ID` is in the URL
 
-### 4. Install Trello MCP Server
-
-```bash
-# Clone the MCP server
-git clone https://github.com/kocakli/Trello-Desktop-MCP.git
-cd Trello-Desktop-MCP
-
-# Install and build
-npm install
-npm run build
-
-# Note the path to dist/index.js for Claude Desktop config
-echo "MCP Server path: $(pwd)/dist/index.js"
-```
-
-### 5. Configure Claude Desktop
-
-Edit your Claude Desktop config file:
-
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows:** `%APPDATA%\\Claude\\claude_desktop_config.json`
-
-Add the Trello MCP server:
-
-```json
-{
-  "mcpServers": {
-    "trello": {
-      "command": "node",
-      "args": ["/absolute/path/to/Trello-Desktop-MCP/dist/index.js"],
-      "env": {
-        "TRELLO_API_KEY": "your_api_key_here",
-        "TRELLO_TOKEN": "your_token_here"
-      }
-    }
-  }
-}
-```
-
-**Important:** Use absolute paths and restart Claude Desktop after configuration.
 
 ## Usage
 
@@ -211,8 +170,8 @@ Main synchronization service.
 
 ```typescript
 class TodoTrelloSync {
-  // Initialize connection to Trello MCP server
-  async initialize(mcpServerPath?: string): Promise<void>
+  // Initialize the Trello integration
+  async initialize(): Promise<void>
 
   // Sync single task
   async syncTask(task: TodoTask, options?: SyncOptions): Promise<SyncResult>
@@ -231,14 +190,14 @@ class TodoTrelloSync {
 }
 ```
 
-### TrelloMCPClient
+### TrelloClient
 
-Low-level client for Trello MCP operations.
+Low-level client for Trello REST API operations.
 
 ```typescript
-class TrelloMCPClient {
+class TrelloClient {
   // Connection management
-  async connect(mcpServerPath?: string): Promise<void>
+  async connect(): Promise<void>
   async disconnect(): Promise<void>
 
   // Board operations
@@ -293,10 +252,10 @@ LOG_LEVEL=debug           # Logging level (debug, info, warn, error)
 
 ### Common Issues
 
-1. **"Not connected to MCP server"**
-   - Ensure kocakli/Trello-Desktop-MCP is installed and built
-   - Check Claude Desktop configuration
-   - Verify absolute paths in config
+1. **"Connection failed"**
+   - Verify API key and token are correct
+   - Check internet connection
+   - Ensure Trello API is accessible
 
 2. **"Failed to access Trello board"**
    - Verify API key and token are correct
@@ -322,7 +281,7 @@ LOG_LEVEL=debug
 ```
 
 This will show:
-- MCP server connection details
+- API request/response details
 - API request/response data
 - Task-to-card mapping information
 - Sync operation details
@@ -365,7 +324,7 @@ src/
 │   ├── config.ts         # Configuration management
 │   └── logger.ts         # Logging utilities
 ├── services/
-│   ├── trello-client.ts  # Trello MCP client wrapper
+│   ├── trello-client.ts  # Trello REST API client
 │   └── todo-sync.ts      # TodoWrite ↔ Trello sync logic
 └── tests/
     └── *.test.ts         # Test files
@@ -389,7 +348,7 @@ For issues and questions:
 1. Check the troubleshooting section above
 2. Review logs with `LOG_LEVEL=debug`
 3. Test connection with `npm start test`
-4. Verify kocakli/Trello-Desktop-MCP server installation
+4. Check Trello API credentials and permissions
 
 ---
 
