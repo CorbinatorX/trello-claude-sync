@@ -1,6 +1,6 @@
 ---
 description: "Create Trello card from current TodoWrite plan"
-command: "cd dev-tools/trello-integration && npm run build && node commands/trello-create.js $ARGUMENTS"
+command: "trello-claude-sync create $ARGUMENTS"
 ---
 
 # /trello-create

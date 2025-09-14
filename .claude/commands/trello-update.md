@@ -1,6 +1,6 @@
----
+w---
 description: "Update current Trello card with TodoWrite progress"
-command: "cd dev-tools/trello-integration && npm run build && node commands/trello-update.js $ARGUMENTS"
+command: "trello-claude-sync update $ARGUMENTS"
 ---
 
 # /trello-update

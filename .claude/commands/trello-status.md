@@ -1,6 +1,6 @@
 ---
 description: "Show current Trello session status and active card"
-command: "cd dev-tools/trello-integration && npm run build && node commands/trello-status.js"
+command: "trello-claude-sync status"
 ---
 
 # /trello-status

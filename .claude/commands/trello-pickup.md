@@ -1,6 +1,6 @@
 ---
 description: "Load existing Trello card into current session"
-command: "cd dev-tools/trello-integration && npm run build && node commands/trello-pickup.js $ARGUMENTS"
+command: "trello-claude-sync pickup $ARGUMENTS"
 ---
 
 # /trello-pickup

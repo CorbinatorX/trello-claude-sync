@@ -1,6 +1,6 @@
 ---
 description: "Move current card to Done and complete the workflow"
-command: "cd dev-tools/trello-integration && npm run build && node commands/trello-complete.js $ARGUMENTS"
+command: "trello-claude-sync complete $ARGUMENTS"
 ---
 
 # /trello-complete
