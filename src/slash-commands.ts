@@ -115,8 +115,9 @@ Use: \`/trello-pickup <card-id>\` with the specific ID`;
       await client.addComment(card.id, '🚀 **Card picked up for active work**\n\n*Moved to In Progress via Claude Code*');
     }
 
-    // Extract tasks from card description (if formatted properly)
-    const tasks = parseTasksFromDescription(card.desc || '');
+    // Extract tasks and context from card history (description + comments)
+    const cardHistory = await client.getCardHistory(card.id);
+    const { tasks, latestContext, progressSummary } = extractLatestStateFromHistory(cardHistory.history);
 
     // Store in persistent session
     setActiveCard(card.id, card.name, tasks);
@@ -124,8 +125,11 @@ Use: \`/trello-pickup <card-id>\` with the specific ID`;
     logger.success('Card picked up and moved to In Progress!');
 
     const taskList = tasks.length > 0
-      ? `\n\n**Extracted Tasks:**\n${tasks.map(t => `- ${t.content} (${t.status})`).join('\n')}`
-      : '\n\n*No structured tasks found in card description*';
+      ? `\n\n**📋 Latest Task Status:**\n${tasks.map(t => {
+          const statusEmoji = t.status === 'completed' ? '✅' : t.status === 'in_progress' ? '⚙️' : '📋';
+          return `${statusEmoji} ${t.content}`;
+        }).join('\n')}`
+      : '\n\n*No structured tasks found in card history*';
 
     const currentListName = inProgressListId && card.idList !== inProgressListId ? 'DOING ⚙️' : await getCurrentListName(client, card);
     const moveMessage = inProgressListId && card.idList !== inProgressListId ? '\n🚀 **Automatically moved to DOING column**' : '';
@@ -134,9 +138,13 @@ Use: \`/trello-pickup <card-id>\` with the specific ID`;
 
 **Card:** [${card.name}](${card.url})
 **Current List:** ${currentListName}${moveMessage}
-**Description:** ${card.desc || '*No description*'}${taskList}
 
-🔗 This card is now your active work item. Use:
+${progressSummary}${taskList}
+
+**📚 Recent Card Activity:**
+${latestContext}
+
+🔗 This card is now your active work item. Context loaded from full card history (description + comments).
 - Update your TodoWrite tasks and they'll sync to this card
 - \`/trello-complete\` when all work is finished`;
 
@@ -290,6 +298,125 @@ ${card.desc || '*No description*'}`;
 }
 
 // Helper functions
+
+/**
+ * Extract latest state from chronological card history (description + comments)
+ */
+function extractLatestStateFromHistory(history: Array<{
+  date: string;
+  type: 'description' | 'comment' | 'move' | 'update';
+  content: string;
+  author?: string;
+}>): {
+  tasks: TodoTask[];
+  latestContext: string;
+  progressSummary: string;
+} {
+  const tasks: Map<string, { task: TodoTask; lastUpdated: string }> = new Map();
+  let latestProgressUpdate = '';
+
+  // Process history chronologically to build up the latest state
+  for (const entry of history) {
+    // Extract tasks from description and comments
+    if (entry.type === 'description' || entry.type === 'comment') {
+      const extractedTasks = extractTasksFromText(entry.content);
+
+      // Update tasks map with latest information
+      for (const task of extractedTasks) {
+        const existingEntry = tasks.get(task.content);
+        if (!existingEntry || new Date(entry.date) > new Date(existingEntry.lastUpdated)) {
+          tasks.set(task.content, {
+            task: task,
+            lastUpdated: entry.date
+          });
+        }
+      }
+
+      // Look for progress updates in comments
+      if (entry.type === 'comment') {
+        const progressIndicators = [
+          'completed', 'finished', 'done', '✅',
+          'working on', 'started', 'in progress', '⚙️',
+          'blocked', 'pending', 'todo', '📋'
+        ];
+
+        const hasProgressUpdate = progressIndicators.some(indicator =>
+          entry.content.toLowerCase().includes(indicator)
+        );
+
+        if (hasProgressUpdate) {
+          latestProgressUpdate = entry.content;
+        }
+      }
+    }
+  }
+
+  // Generate summary context from recent history
+  const recentEntries = history.slice(-5); // Last 5 entries
+  const latestContext = recentEntries
+    .map(entry => `**${entry.type}** (${new Date(entry.date).toLocaleDateString()}): ${entry.content}`)
+    .join('\n\n');
+
+  // Create progress summary
+  const taskArray = Array.from(tasks.values()).map(entry => entry.task);
+  const completedCount = taskArray.filter(t => t.status === 'completed').length;
+  const inProgressCount = taskArray.filter(t => t.status === 'in_progress').length;
+  const pendingCount = taskArray.filter(t => t.status === 'pending').length;
+
+  let progressSummary = `📊 **Progress Summary**: ${completedCount}/${taskArray.length} completed`;
+  if (inProgressCount > 0) progressSummary += `, ${inProgressCount} in progress`;
+  if (pendingCount > 0) progressSummary += `, ${pendingCount} pending`;
+
+  if (latestProgressUpdate) {
+    progressSummary += `\n\n**Latest Update**: ${latestProgressUpdate}`;
+  }
+
+  return {
+    tasks: taskArray,
+    latestContext,
+    progressSummary
+  };
+}
+
+/**
+ * Extract tasks from any text content (description, comments, etc.)
+ */
+function extractTasksFromText(text: string): TodoTask[] {
+  const tasks: TodoTask[] = [];
+  const lines = text.split('\n');
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Look for task-like patterns: - Task, * Task, [ ] Task, [x] Task, etc.
+    if (trimmed.match(/^[-*•]\s+(.+)/) ||
+        trimmed.match(/^\[[ x]\]\s+(.+)/) ||
+        trimmed.match(/^[0-9]+\.\s+(.+)/)) {
+
+      let taskText = trimmed.replace(/^[-*•\[\] x0-9\.]+\s*/, '');
+
+      // Remove status emojis if present
+      taskText = taskText.replace(/^[✅⚙️📋]\s*/, '');
+
+      // Determine status from indicators
+      const isCompleted = trimmed.includes('[x]') ||
+                         trimmed.includes('✅') ||
+                         /\b(completed|finished|done)\b/i.test(trimmed);
+
+      const isInProgress = trimmed.includes('⚙️') ||
+                          /\b(in progress|working on|started)\b/i.test(trimmed);
+
+      const status = isCompleted ? 'completed' : isInProgress ? 'in_progress' : 'pending';
+
+      tasks.push({
+        content: taskText,
+        status: status,
+        activeForm: `Working on ${taskText}`,
+      });
+    }
+  }
+
+  return tasks;
+}
 
 function extractTasksFromPlan(planText: string): TodoTask[] {
   const tasks: TodoTask[] = [];

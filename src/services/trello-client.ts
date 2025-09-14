@@ -1,4 +1,4 @@
-import { TrelloConfig, TrelloCard, TrelloList, TrelloBoard, SyncResult } from '../types/index.js';
+import { TrelloConfig, TrelloCard, TrelloList, TrelloBoard, TrelloAction, SyncResult } from '../types/index.js';
 import { getConfig } from '../utils/config.js';
 import { logger } from '../utils/logger.js';
 
@@ -171,6 +171,104 @@ export class TrelloMCPClient {
    */
   async getCard(cardId: string): Promise<TrelloCard> {
     return this.makeRequest(`/cards/${cardId}`);
+  }
+
+  /**
+   * Get card actions (comments, moves, etc.) in chronological order
+   */
+  async getCardActions(cardId: string, limit: number = 50): Promise<TrelloAction[]> {
+    const actions = await this.makeRequest(`/cards/${cardId}/actions?limit=${limit}&filter=commentCard,updateCard:desc,updateCard:idList,updateCard:name`);
+    // Trello returns actions in reverse chronological order, so reverse to get chronological
+    return actions.reverse();
+  }
+
+  /**
+   * Get complete chronological history of a card (description + comments + updates)
+   */
+  async getCardHistory(cardId: string): Promise<{
+    description: string;
+    history: Array<{
+      date: string;
+      type: 'description' | 'comment' | 'move' | 'update';
+      content: string;
+      author?: string;
+    }>;
+  }> {
+    const [card, actions] = await Promise.all([
+      this.getCard(cardId),
+      this.getCardActions(cardId)
+    ]);
+
+    const history: Array<{
+      date: string;
+      type: 'description' | 'comment' | 'move' | 'update';
+      content: string;
+      author?: string;
+    }> = [];
+
+    // Add initial description
+    if (card.desc) {
+      history.push({
+        date: card.dateLastActivity, // Use last activity as fallback for creation date
+        type: 'description',
+        content: card.desc,
+        author: 'system'
+      });
+    }
+
+    // Add all actions chronologically
+    for (const action of actions) {
+      const author = action.memberCreator.fullName || action.memberCreator.username;
+
+      switch (action.type) {
+        case 'commentCard':
+          if (action.data.text) {
+            history.push({
+              date: action.date,
+              type: 'comment',
+              content: action.data.text,
+              author
+            });
+          }
+          break;
+
+        case 'updateCard':
+          if (action.data.old && 'desc' in action.data.old) {
+            // Description update
+            history.push({
+              date: action.date,
+              type: 'update',
+              content: `Description updated`,
+              author
+            });
+          } else if (action.data.listBefore && action.data.listAfter) {
+            // List move
+            history.push({
+              date: action.date,
+              type: 'move',
+              content: `Moved from "${action.data.listBefore.name}" to "${action.data.listAfter.name}"`,
+              author
+            });
+          } else if (action.data.old && 'name' in action.data.old) {
+            // Name update
+            history.push({
+              date: action.date,
+              type: 'update',
+              content: `Card name updated`,
+              author
+            });
+          }
+          break;
+      }
+    }
+
+    // Sort by date to ensure chronological order
+    history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    return {
+      description: card.desc || '',
+      history
+    };
   }
 
   /**

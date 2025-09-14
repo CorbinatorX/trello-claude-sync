@@ -30,6 +30,33 @@ export interface TrelloLabel {
   color: string;
 }
 
+export interface TrelloAction {
+  id: string;
+  type: string;
+  date: string;
+  memberCreator: {
+    id: string;
+    username: string;
+    fullName: string;
+  };
+  data: {
+    text?: string;
+    card?: {
+      id: string;
+      name: string;
+    };
+    old?: any;
+    listBefore?: {
+      id: string;
+      name: string;
+    };
+    listAfter?: {
+      id: string;
+      name: string;
+    };
+  };
+}
+
 export interface TrelloList {
   id: string;
   name: string;
